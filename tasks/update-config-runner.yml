@@ -1157,7 +1157,8 @@
   when: (item | length > 0) and gitlab_runner_verify_directories
 
 - name: "Ensure directory access test {{ runn_name_prefix }}"
-  ansible.builtin.command: test -r {{ item }}
+  ansible.builtin.command:
+    cmd: test -r {{ item }}
   loop:
     - '{{ gitlab_runner.builds_dir | default("") }}'
     - '{{ gitlab_runner.cache_dir | default("") }}'

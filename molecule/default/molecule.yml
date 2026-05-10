@@ -15,7 +15,7 @@ driver:
 
 platforms:
   - name: mock
-    image: python:3.11-slim
+    image: python:3.14-slim
     pre_build_image: true
     networks:
       - name: testnet

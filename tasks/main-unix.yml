@@ -16,7 +16,8 @@
   when: ansible_facts['os_family'] == 'Archlinux'
 
 - name: "(Unix) Delete runners which were removed in GitLab"
-  ansible.builtin.command: "{{ gitlab_runner_executable }} verify --delete"
+  ansible.builtin.command:
+    cmd: "{{ gitlab_runner_executable }} verify --delete"
   register: verified_runners
   changed_when: '"Updated " in verified_runners.stderr'
   check_mode: false

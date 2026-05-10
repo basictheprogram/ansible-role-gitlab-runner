@@ -1,5 +1,22 @@
 ---
 profile: production
+
+exclude_paths:
+  - .cache/
+  - .github/
+  - .ansible/
+  - .pre-commit-config.yaml
+  - molecule/
+
+skip_list:
+  - var-naming   # role variables follow upstream conventions
+  - git-latest   # gitlab_runner_package_state: latest is intentional
+
 warn_list:
-  - role-name  # until role name is fixed on galaxy https://github.com/riemers/ansible-gitlab-runner/pull/312
+  - role-name      # Galaxy role name; update when namespace is published
   - no-changed-when  # TODO in future
+
+enable_list:
+  - fqcn
+
+use_default_rules: true

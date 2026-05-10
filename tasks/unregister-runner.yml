@@ -26,7 +26,8 @@
     - gitlab_install_target_platform == 'windows'
 
 - name: "Unregister runner"
-  ansible.builtin.command: "{{ gitlab_runner_executable }} unregister --name '{{ actual_gitlab_runner_name }}'"
+  ansible.builtin.command:
+    cmd: "{{ gitlab_runner_executable }} unregister --name '{{ actual_gitlab_runner_name }}'"
   when:
     - gitlab_install_target_platform == 'unix'
   become: "{{ gitlab_runner_system_mode }}"

@@ -1,24 +1,22 @@
-from __future__ import print_function
-import os
-import sys
 import logging
 import random
+import sys
 
-from flask import Flask, Blueprint, request, jsonify
+from flask import Blueprint, Flask, jsonify, request
 
 app = Flask(__name__)
-bp = Blueprint(__name__, 'api', url_prefix='/api/v4')
+bp = Blueprint(__name__, "api", url_prefix="/api/v4")
 
 
-@bp.route('/runners', methods=['POST'])
+@bp.route("/runners", methods=["POST"])
 def register_runner():
-    logging.info("Got register_runner request: {!r}".format(request.data))
+    logging.info("Got register_runner request: %r", request.data)
     req = request.json
     res = {}
 
-    token = req['token']
+    token = req["token"]
     if token.isalnum() and token.islower():
-        res['token'] = "{}{}".format(token.upper(), random.randint(100, 999))
+        res["token"] = f"{token.upper()}{random.randint(100, 999)}"
         status = 201
     elif token.isalnum() and token.isupper():
         status = 403
@@ -28,13 +26,13 @@ def register_runner():
     return jsonify(res), status
 
 
-@bp.route('/runners/verify', methods=['POST'])
+@bp.route("/runners/verify", methods=["POST"])
 def verify_runner():
-    logging.info("Got verify_runner request: {!r}".format(request.data))
+    logging.info("Got verify_runner request: %r", request.data)
     req = request.json
     res = {}
 
-    token = req['token']
+    token = req["token"]
     if token.isalnum() and token.isupper():
         status = 200
     elif token.isalnum() and token.islower():
@@ -48,8 +46,8 @@ def verify_runner():
 app.register_blueprint(bp)
 
 
-if __name__ == '__main__':
-    port = int(sys.argv[2])
+if __name__ == "__main__":
+    port = int(sys.argv[1])
 
     logging.basicConfig(level=logging.DEBUG)
 

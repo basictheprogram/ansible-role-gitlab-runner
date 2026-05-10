@@ -199,25 +199,26 @@
   ansible.builtin.import_tasks: list-configured-runners-unix.yml
 
 - name: "Register runner to GitLab"
-  ansible.builtin.command: >
-    {{ register_runner_cmd }}
-    {% if gitlab_runner_registration_token_type == "authentication-token" %}
-    --token '{{ gitlab_runner.token }}'
-    {% else %}
-    --registration-token '{{ gitlab_runner.token | default(gitlab_runner_registration_token) }}'
-    {% endif %}
-    {% if gitlab_runner.cache_s3_secret_key is defined %}
-    --cache-s3-secret-key '{{ gitlab_runner.cache_s3_secret_key }}'
-    {% endif %}
-    {% if gitlab_runner.cache_gcs_private_key is defined %}
-    --cache-gcs-private-key '{{ gitlab_runner.cache_gcs_private_key }}'
-    {% endif %}
-    {% if gitlab_runner.cache_azure_account_key is defined %}
-    --cache-azure-account-key '{{ gitlab_runner.cache_azure_account_key }}'
-    {% endif %}
-    {% if gitlab_runner.ssh_password is defined %}
-    --ssh-password '{{ gitlab_runner.ssh_password }}'
-    {% endif %}
+  ansible.builtin.command:
+    cmd: >
+      {{ register_runner_cmd }}
+      {% if gitlab_runner_registration_token_type == "authentication-token" %}
+      --token '{{ gitlab_runner.token }}'
+      {% else %}
+      --registration-token '{{ gitlab_runner.token | default(gitlab_runner_registration_token) }}'
+      {% endif %}
+      {% if gitlab_runner.cache_s3_secret_key is defined %}
+      --cache-s3-secret-key '{{ gitlab_runner.cache_s3_secret_key }}'
+      {% endif %}
+      {% if gitlab_runner.cache_gcs_private_key is defined %}
+      --cache-gcs-private-key '{{ gitlab_runner.cache_gcs_private_key }}'
+      {% endif %}
+      {% if gitlab_runner.cache_azure_account_key is defined %}
+      --cache-azure-account-key '{{ gitlab_runner.cache_azure_account_key }}'
+      {% endif %}
+      {% if gitlab_runner.ssh_password is defined %}
+      --ssh-password '{{ gitlab_runner.ssh_password }}'
+      {% endif %}
   when:
     - actual_gitlab_runner_name not in registered_gitlab_runner_names
     - gitlab_runner.state | default('present') == 'present'

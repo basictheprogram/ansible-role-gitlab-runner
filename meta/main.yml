@@ -1,21 +1,31 @@
 ---
+# This is a fork of https://github.com/riemers/ansible-gitlab-runner
+# maintained by Bob Tanner <tanner@real-time.com>, Real Time Enterprises, Inc.
+dependencies: []
+
 galaxy_info:
+  namespace: realtime
   role_name: gitlab_runner
-  namespace: riemers
-  author: Erik-jan Riemers
-  description: GitLab Runner
-  license: MIT
-  min_ansible_version: "2.13"
+  author: "Bob Tanner"
+  company: "Real Time Enterprises, Inc."
+  description: "GitLab Runner (fork of riemers/ansible-gitlab-runner)"
+  license: "MIT"
+  min_ansible_version: "2.20"
   platforms:
     - name: EL
       versions:
         - all
     - name: Ubuntu
       versions:
-        - all
+        - jammy    # 22.04 LTS, supported until April 2027
+        - noble    # 24.04 LTS, supported until April 2029
+        - questing # 25.10 interim, supported until July 2026
+        - resolute # 26.04 LTS, supported until April 2031
     - name: Debian
-      version:
-        - all
+      versions:
+        - bullseye  # 11, LTS until August 2026
+        - bookworm  # 12, oldstable, LTS until June 2028
+        - trixie    # 13, current stable since August 2025
     - name: MacOSX
       versions:
         - all

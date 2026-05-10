@@ -1,8 +1,14 @@
-GitLab Runner [![Build Status](https://app.travis-ci.com/riemers/ansible-gitlab-runner.svg?branch=master)](https://travis-ci.org/riemers/ansible-gitlab-runner) [![Ansible Role](https://img.shields.io/badge/role-riemers.gitlab--runner-blue.svg?maxAge=2592000)](https://galaxy.ansible.com/ui/standalone/roles/riemers/gitlab-runner/)
+GitLab Runner
 =============
 
+> **This is a fork of [riemers/ansible-gitlab-runner](https://github.com/riemers/ansible-gitlab-runner),
+> maintained by [Bob Tanner](mailto:tanner@real-time.com) at Real Time Enterprises, Inc.
+> The upstream project is no longer actively maintained. This fork tracks and extends it for
+> continued personal and organizational use.**
+
 This role will install the [official GitLab Runner](https://gitlab.com/gitlab-org/gitlab-runner)
-(fork from haroldb) with updates. Needed something simple and working, this did the trick for me. Open for changes though.
+(originally forked from haroldb, then maintained by riemers). It provides a simple, working
+install across Linux, macOS, Windows, and Docker.
 
 Requirements
 ------------
@@ -16,7 +22,7 @@ Role Variables
 --------------
 
 - `gitlab_runner_package_name` - **As of GitLab 10.x**, the package name `gitlab-ci-multi-runner` has been renamed to `gitlab-runner`. To install a version earlier than 10.x, define the variable `gitlab_runner_package_name: gitlab-ci-multi-runner`.
-- `gitlab_runner_wanted_version` or `gitlab_runner_package_version` - Use these to install a specific version of the GitLab Runner (by default, the latest version is installed). 
+- `gitlab_runner_wanted_version` or `gitlab_runner_package_version` - Use these to install a specific version of the GitLab Runner (by default, the latest version is installed).
   - On macOS and Windows, use `gitlab_runner_wanted_version: 12.4.1` (example).
   - On Linux, use `gitlab_runner_package_version` instead.
 - `gitlab_runner_concurrent` - Defines the maximum number of jobs that can run concurrently. Defaults to the number of processor cores.
@@ -182,10 +188,16 @@ Run As A Different User
 To run the Gitlab Runner as a different user (rather than the default `gitlab-runner` user), there is a workaround requiring a little
 extra Ansible to be run. See https://github.com/riemers/ansible-gitlab-runner/issues/277 for details.
 
+Maintainer
+----------
+This fork is maintained by **Bob Tanner** &lt;tanner@real-time.com&gt; at Real Time Enterprises, Inc.
+Issues and PRs for this fork should be filed here, not upstream.
+
 Contributors
 ------------
-Feel free to add your name to the readme if you make a PR. A full list of people from the PR's is [here](https://github.com/riemers/ansible-gitlab-runner/pulls?q=is%3Apr+is%3Aclosed)
+A full list of upstream contributors is [here](https://github.com/riemers/ansible-gitlab-runner/pulls?q=is%3Apr+is%3Aclosed).
 
+- Erik-jan Riemers (original maintainer of riemers/ansible-gitlab-runner)
 - Gastrofix for adding Mac Support
 - Matthias Schmieder for adding Windows Support
 - dniwdeus & rosenstrauch for adding AWS autoscale option
