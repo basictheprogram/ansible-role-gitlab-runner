@@ -1,10 +1,16 @@
 ---
 "on":
+  push:
+    branches:
+      - main
+      - ansible-core-2.20
   pull_request:
     branches:
       - main
   workflow_dispatch:
+
 jobs:
+  # ── Lint ──────────────────────────────────────────────────────────────────
   ansible-lint:
     runs-on: ubuntu-latest
     steps:
@@ -12,3 +18,84 @@ jobs:
 
       - name: Lint role
         uses: ansible/ansible-lint@v25
+
+  # ── Molecule: default (Ubuntu + Debian) ───────────────────────────────────
+  # Runs on every push/PR — both main and ansible-core-2.20 branches.
+  molecule-default:
+    runs-on: ubuntu-latest
+    needs: ansible-lint
+    steps:
+      - name: Check out role
+        uses: actions/checkout@v4
+        with:
+          # Checked out under the Galaxy role name so Ansible can resolve
+          # 'realtime.gitlab_runner' in converge.yml without a symlink.
+          path: realtime.gitlab_runner
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install molecule dependencies
+        run: pip install -r molecule/requirements.txt
+        working-directory: realtime.gitlab_runner
+
+      - name: Run molecule default scenario
+        working-directory: realtime.gitlab_runner
+        env:
+          ANSIBLE_ROLES_PATH: ${{ github.workspace }}
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"
+        run: |
+          molecule create
+          TEST_VARS_FILE=vars/initial.yml molecule converge
+          EXPECTED_TOML=expected/initial.toml molecule verify
+          TEST_VARS_FILE=vars/updated.yml molecule converge
+          EXPECTED_TOML=expected/updated.toml molecule verify
+          molecule destroy
+
+  # ── Molecule: redhat (Enterprise Linux) ───────────────────────────────────
+  # Runs only on main — pushes to ansible-core-2.20 skip this job.
+  molecule-redhat:
+    runs-on: ubuntu-latest
+    needs: ansible-lint
+    if: github.ref_name == 'main' || github.base_ref == 'main'
+    steps:
+      - name: Check out role
+        uses: actions/checkout@v4
+        with:
+          path: realtime.gitlab_runner
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install molecule dependencies
+        run: pip install -r molecule/requirements.txt
+        working-directory: realtime.gitlab_runner
+
+      - name: Run molecule redhat scenario
+        working-directory: realtime.gitlab_runner
+        env:
+          ANSIBLE_ROLES_PATH: ${{ github.workspace }}
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"
+        run: |
+          molecule create -s redhat
+          TEST_VARS_FILE=vars/initial.yml molecule converge -s redhat
+          EXPECTED_TOML=expected/initial.toml molecule verify -s redhat
+          TEST_VARS_FILE=vars/updated.yml molecule converge -s redhat
+          EXPECTED_TOML=expected/updated.toml molecule verify -s redhat
+          molecule destroy -s redhat
+
+  # ── Molecule: macos and windows ───────────────────────────────────────────
+  # These scenarios use driver: delegated and require pre-provisioned hosts
+  # reachable over SSH (macOS) or WinRM (Windows). They cannot run on
+  # standard GitHub Actions runners and are not included here.
+  #
+  # To run locally against a provisioned host:
+  #   MOLECULE_MACOS_HOST=<ip> MOLECULE_MACOS_USER=<user> molecule test -s macos
+  #   MOLECULE_WINDOWS_HOST=<ip> MOLECULE_WINDOWS_USER=<user> \
+  #     MOLECULE_WINDOWS_PASS=<pass> molecule test -s windows

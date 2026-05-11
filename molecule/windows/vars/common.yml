@@ -1,0 +1,10 @@
+---
+# Registration is skipped when gitlab_runner_registration_token is empty
+# and no runner defines a token. This keeps the scenario self-contained
+# — it tests the Windows install path only.
+gitlab_runner_registration_token: ""
+gitlab_runner_no_log_secrets: true
+gitlab_runner_runners:
+  - name: "windows-test-runner"
+    state: present
+    executor: shell

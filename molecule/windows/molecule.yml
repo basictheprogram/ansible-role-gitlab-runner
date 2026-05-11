@@ -1,0 +1,56 @@
+---
+# Windows cannot run inside a Linux Docker container.
+# This scenario uses the delegated driver and expects a Windows host to be
+# pre-provisioned and reachable over WinRM.
+#
+# Required environment variables:
+#   MOLECULE_WINDOWS_HOST  — hostname or IP of the Windows target
+#   MOLECULE_WINDOWS_USER  — WinRM user with Administrator rights
+#   MOLECULE_WINDOWS_PASS  — WinRM password
+#   MOLECULE_WINDOWS_PORT  — WinRM HTTPS port (default: 5986)
+#
+# The target must have WinRM configured and the ansible.windows collection
+# installed (listed in requirements.yml).
+#
+# Example:
+#   MOLECULE_WINDOWS_HOST=192.168.1.20 \
+#   MOLECULE_WINDOWS_USER=Administrator \
+#   MOLECULE_WINDOWS_PASS=secret \
+#     molecule test -s windows
+
+dependency:
+  name: galaxy
+  options:
+    ignore-errors: true
+
+driver:
+  name: delegated
+  options:
+    managed: false
+
+platforms:
+  - name: windows-runner
+
+provisioner:
+  name: ansible
+  playbooks:
+    converge: converge.yml
+  inventory:
+    hosts:
+      all:
+        hosts:
+          windows-runner:
+            ansible_host: "${MOLECULE_WINDOWS_HOST:-127.0.0.1}"
+            ansible_user: "${MOLECULE_WINDOWS_USER:-Administrator}"
+            ansible_password: "${MOLECULE_WINDOWS_PASS}"
+            ansible_port: "${MOLECULE_WINDOWS_PORT:-5986}"
+            ansible_connection: winrm
+            ansible_winrm_transport: ntlm
+            ansible_winrm_server_cert_validation: ignore
+    groups:
+      runner:
+        hosts:
+          windows-runner:
+
+verifier:
+  name: ansible

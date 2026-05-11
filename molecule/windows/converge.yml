@@ -1,0 +1,9 @@
+---
+- name: Converge (Windows — install only, skip registration)
+  hosts: runner
+
+  vars_files:
+    - vars/common.yml
+
+  roles:
+    - role: realtime.gitlab_runner

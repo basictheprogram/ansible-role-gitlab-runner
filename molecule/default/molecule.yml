@@ -22,13 +22,119 @@ platforms:
     command: >
       bash -lc "pip install -r /srv/mock/requirements.txt && python /srv/mock/server.py 8000"
     volumes:
-      - "${MOLECULE_SCENARIO_DIRECTORY}/mock:/srv/mock:ro"
+      - "${MOLECULE_PROJECT_DIRECTORY}/molecule/mock:/srv/mock:ro"
     published_ports:
       - "8000:8000"
 
-  - name: runner
+  # ── Ubuntu ──────────────────────────────────────────────────────────────
+  - name: runner-jammy
     image: geerlingguy/docker-ubuntu2204-ansible
     pre_build_image: true
+    groups:
+      - runner
+    networks:
+      - name: testnet
+    privileged: true
+    cgroupns_mode: host
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    tmpfs:
+      - /run
+      - /run/lock
+    command: /sbin/init
+
+  - name: runner-noble
+    image: geerlingguy/docker-ubuntu2404-ansible
+    pre_build_image: true
+    groups:
+      - runner
+    networks:
+      - name: testnet
+    privileged: true
+    cgroupns_mode: host
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    tmpfs:
+      - /run
+      - /run/lock
+    command: /sbin/init
+
+  # Ubuntu 25.10 (Questing Quokka) — image may not be published yet.
+  - name: runner-questing
+    image: geerlingguy/docker-ubuntu2510-ansible
+    pre_build_image: true
+    groups:
+      - runner
+    networks:
+      - name: testnet
+    privileged: true
+    cgroupns_mode: host
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    tmpfs:
+      - /run
+      - /run/lock
+    command: /sbin/init
+
+  # Ubuntu 26.04 LTS (Resolute Raccoon) — image may not be published yet.
+  # This platform exercises the codename-fallback install path added in
+  # tasks/install-debian.yml. Once geerlingguy publishes this image,
+  # runner-resolute validates end-to-end Resolute Raccoon support.
+  - name: runner-resolute
+    image: geerlingguy/docker-ubuntu2604-ansible
+    pre_build_image: true
+    groups:
+      - runner
+    networks:
+      - name: testnet
+    privileged: true
+    cgroupns_mode: host
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    tmpfs:
+      - /run
+      - /run/lock
+    command: /sbin/init
+
+  # ── Debian ───────────────────────────────────────────────────────────────
+  - name: runner-bullseye
+    image: geerlingguy/docker-debian11-ansible
+    pre_build_image: true
+    groups:
+      - runner
+    networks:
+      - name: testnet
+    privileged: true
+    cgroupns_mode: host
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    tmpfs:
+      - /run
+      - /run/lock
+    command: /sbin/init
+
+  - name: runner-bookworm
+    image: geerlingguy/docker-debian12-ansible
+    pre_build_image: true
+    groups:
+      - runner
+    networks:
+      - name: testnet
+    privileged: true
+    cgroupns_mode: host
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    tmpfs:
+      - /run
+      - /run/lock
+    command: /sbin/init
+
+  # Debian 13 (Trixie) — image may not be published yet.
+  - name: runner-trixie
+    image: geerlingguy/docker-debian13-ansible
+    pre_build_image: true
+    groups:
+      - runner
     networks:
       - name: testnet
     privileged: true
@@ -52,7 +158,16 @@ provisioner:
       all:
         hosts:
           mock:
-          runner:
+    groups:
+      runner:
+        hosts:
+          runner-jammy:
+          runner-noble:
+          runner-questing:
+          runner-resolute:
+          runner-bullseye:
+          runner-bookworm:
+          runner-trixie:
 
 verifier:
   name: testinfra

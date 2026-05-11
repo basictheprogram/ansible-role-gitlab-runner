@@ -1,0 +1,50 @@
+---
+# macOS cannot run inside a Linux Docker container.
+# This scenario uses the delegated driver and expects a macOS host to be
+# pre-provisioned and reachable over SSH.
+#
+# Required environment variables:
+#   MOLECULE_MACOS_HOST  — hostname or IP of the macOS target
+#   MOLECULE_MACOS_USER  — SSH user with sudo rights (default: ansible)
+#   MOLECULE_MACOS_PORT  — SSH port (default: 22)
+#
+# The target must have Homebrew installed. gitlab-runner is installed via
+# 'brew install gitlab-runner'.
+#
+# Example:
+#   MOLECULE_MACOS_HOST=192.168.1.10 MOLECULE_MACOS_USER=admin \
+#     molecule test -s macos
+
+dependency:
+  name: galaxy
+  options:
+    ignore-errors: true
+
+driver:
+  name: delegated
+  options:
+    managed: false
+
+platforms:
+  - name: macos-runner
+
+provisioner:
+  name: ansible
+  playbooks:
+    converge: converge.yml
+  inventory:
+    hosts:
+      all:
+        hosts:
+          macos-runner:
+            ansible_host: "${MOLECULE_MACOS_HOST:-127.0.0.1}"
+            ansible_user: "${MOLECULE_MACOS_USER:-ansible}"
+            ansible_port: "${MOLECULE_MACOS_PORT:-22}"
+            ansible_connection: ssh
+    groups:
+      runner:
+        hosts:
+          macos-runner:
+
+verifier:
+  name: ansible

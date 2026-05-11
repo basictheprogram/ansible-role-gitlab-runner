@@ -1,0 +1,10 @@
+---
+- name: Converge (macOS — install only, skip registration)
+  hosts: runner
+  become: false
+
+  vars_files:
+    - vars/common.yml
+
+  roles:
+    - role: realtime.gitlab_runner
