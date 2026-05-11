@@ -7,7 +7,7 @@ GitLab Runner
 
 > **This is a fork of [riemers/ansible-gitlab-runner](https://github.com/riemers/ansible-gitlab-runner),
 > maintained by Bob Tanner at Real Time Enterprises, Inc.
-> The upstream project is no longer seeking an active maintainer. This fork tracks and extends it for
+> The upstream project is seeking an active maintainer. This fork tracks and extends it for
 > continued personal and organizational use.**
 
 This role will install the [official GitLab Runner](https://gitlab.com/gitlab-org/gitlab-runner)

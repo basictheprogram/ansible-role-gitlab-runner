@@ -14,7 +14,7 @@ jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v8
+      - uses: actions/stale@v9
         with:
           stale-issue-message: Seems this message did not get a lot of love.
             This does not mean it was not seen but time wise might not have made it to proper attention.
