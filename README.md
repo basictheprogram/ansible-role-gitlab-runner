@@ -1,6 +1,10 @@
 GitLab Runner
 =============
 
+[![CI](https://github.com/basictheprogram/ansible-role-gitlab-runner/actions/workflows/ansible.yml/badge.svg)](https://github.com/basictheprogram/ansible-role-gitlab-runner/actions/workflows/ansible.yml)
+[![Ansible Galaxy](https://img.shields.io/badge/ansible--galaxy-gitlab--runner-blue.svg?style=popout-square)](https://galaxy.ansible.com/realtime/gitlab_runner)
+[![Ansible Role](https://img.shields.io/ansible/role/d/realtime/gitlab_runner.svg?style=popout-square)](https://galaxy.ansible.com/realtime/gitlab_runner)
+
 > **This is a fork of [riemers/ansible-gitlab-runner](https://github.com/riemers/ansible-gitlab-runner),
 > maintained by Bob Tanner at Real Time Enterprises, Inc.
 > The upstream project is no longer seeking an active maintainer. This fork tracks and extends it for
@@ -237,7 +241,7 @@ extra Ansible to be run. See https://github.com/riemers/ansible-gitlab-runner/is
 
 Maintainer
 ----------
-This fork is maintained by **Bob Tanner** &lt;tanner@real-time.com&gt; at Real Time Enterprises, Inc.
+This fork is maintained by **Bob Tanner** at Real Time Enterprises, Inc.
 Issues and PRs for this fork should be filed here, not upstream.
 
 Contributors
