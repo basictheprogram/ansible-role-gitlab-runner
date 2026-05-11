@@ -18,4 +18,3 @@ check_interval = 0
     disable_cache = false
     pull_policy = "always"
     volumes = ["/cache"]
-

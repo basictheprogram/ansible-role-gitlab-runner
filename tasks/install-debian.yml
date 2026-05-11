@@ -1,16 +1,115 @@
 ---
+# ---------------------------------------------------------------------------
+# Apt repository codename resolution
+#
+# Determines the effective apt codename to use for the GitLab Runner repo.
+# For supported releases the standard install script is used (unchanged
+# behaviour). For unsupported releases (e.g. Resolute Raccoon / Ubuntu 26.04)
+# the repo is configured manually using the fallback codename so the script's
+# lsb_release auto-detection is bypassed entirely.
+# ---------------------------------------------------------------------------
+- name: "(Debian) Determine effective apt repository codename"
+  ansible.builtin.set_fact:
+    _gitlab_runner_effective_apt_codename: >-
+      {%- if gitlab_runner_apt_repo_codename | default('') != '' -%}
+        {{ gitlab_runner_apt_repo_codename }}
+      {%- elif ansible_facts['distribution_release'] in (gitlab_runner_apt_supported_codenames | default([])) -%}
+        {{ ansible_facts['distribution_release'] }}
+      {%- else -%}
+        {{ gitlab_runner_apt_codename_fallback | default('questing') }}
+      {%- endif -%}
+    _gitlab_runner_codename_needs_manual_repo: >-
+      {{ ansible_facts['distribution_release'] not in (gitlab_runner_apt_supported_codenames | default([]))
+         or (gitlab_runner_apt_repo_codename | default('')) != '' }}
+  when: gitlab_runner_skip_package_repo_install is not defined or not gitlab_runner_skip_package_repo_install
+
+# ---------------------------------------------------------------------------
+# Manual apt repo setup — used when the host codename is not in
+# gitlab_runner_apt_supported_codenames (e.g. Resolute Raccoon) or when an
+# explicit gitlab_runner_apt_repo_codename override is provided.
+# ---------------------------------------------------------------------------
+- name: "(Debian) Ensure /etc/apt/keyrings directory exists"
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+  when:
+    - gitlab_runner_skip_package_repo_install is not defined or not gitlab_runner_skip_package_repo_install
+    - _gitlab_runner_codename_needs_manual_repo | default(false)
+
+- name: "(Debian) Download GitLab Runner repository GPG key"
+  ansible.builtin.get_url:
+    url: https://packages.gitlab.com/runner/gitlab-runner/gpgkey
+    dest: /tmp/gitlab-runner-gpgkey.asc
+    mode: "0644"
+  when:
+    - gitlab_runner_skip_package_repo_install is not defined or not gitlab_runner_skip_package_repo_install
+    - _gitlab_runner_codename_needs_manual_repo | default(false)
+
+- name: "(Debian) Dearmor GitLab Runner GPG key into keyring"
+  ansible.builtin.command:
+    cmd: gpg --dearmor -o {{ gitlab_runner_keyring_path }} /tmp/gitlab-runner-gpgkey.asc
+    creates: "{{ gitlab_runner_keyring_path }}"
+  become: true
+  when:
+    - gitlab_runner_skip_package_repo_install is not defined or not gitlab_runner_skip_package_repo_install
+    - _gitlab_runner_codename_needs_manual_repo | default(false)
+
+- name: "(Debian) Set GitLab Runner GPG keyring permissions"
+  ansible.builtin.file:
+    path: "{{ gitlab_runner_keyring_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  when:
+    - gitlab_runner_skip_package_repo_install is not defined or not gitlab_runner_skip_package_repo_install
+    - _gitlab_runner_codename_needs_manual_repo | default(false)
+
+- name: "(Debian) Add GitLab Runner apt repository using codename '{{ _gitlab_runner_effective_apt_codename | default('') }}'"
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/runner_gitlab-runner.list
+    content: |
+      deb [signed-by={{ gitlab_runner_keyring_path }}] https://packages.gitlab.com/runner/gitlab-runner/ubuntu/ {{ _gitlab_runner_effective_apt_codename }} main
+      deb-src [signed-by={{ gitlab_runner_keyring_path }}] https://packages.gitlab.com/runner/gitlab-runner/ubuntu/ {{ _gitlab_runner_effective_apt_codename }} main
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  when:
+    - gitlab_runner_skip_package_repo_install is not defined or not gitlab_runner_skip_package_repo_install
+    - _gitlab_runner_codename_needs_manual_repo | default(false)
+
+- name: "(Debian) Update apt cache after manual repository configuration"
+  ansible.builtin.apt:
+    update_cache: true
+  become: true
+  when:
+    - gitlab_runner_skip_package_repo_install is not defined or not gitlab_runner_skip_package_repo_install
+    - _gitlab_runner_codename_needs_manual_repo | default(false)
+
+# ---------------------------------------------------------------------------
+# Script-based apt repo setup — used only for supported/native codenames.
+# ---------------------------------------------------------------------------
 - name: "(Debian) Get Gitlab repository installation script"
   ansible.builtin.get_url:
     url: https://packages.gitlab.com/install/repositories/runner/{{ gitlab_runner_package_name }}/script.deb.sh
     dest: /tmp/gitlab-runner.script.deb.sh
     mode: "0744"
-  when: gitlab_runner_skip_package_repo_install is not defined or not gitlab_runner_skip_package_repo_install
+  when:
+    - gitlab_runner_skip_package_repo_install is not defined or not gitlab_runner_skip_package_repo_install
+    - not (_gitlab_runner_codename_needs_manual_repo | default(false))
 
 - name: "(Debian) Install Gitlab repository"
   ansible.builtin.command:
     cmd: bash /tmp/gitlab-runner.script.deb.sh
   become: true
-  when: gitlab_runner_skip_package_repo_install is not defined or not gitlab_runner_skip_package_repo_install
+  when:
+    - gitlab_runner_skip_package_repo_install is not defined or not gitlab_runner_skip_package_repo_install
+    - not (_gitlab_runner_codename_needs_manual_repo | default(false))
 
 - name: "(Debian) Find GitLab runner repository GPG keyring"
   ansible.builtin.stat:

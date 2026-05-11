@@ -45,4 +45,9 @@ line-ending = "auto"
 # S104  - binding to 0.0.0.0 is intentional for container networking
 # S201  - debug=True is intentional for the test mock server
 # S311  - random token generation is not security-sensitive in test mocks
-"**/mock/**" = ["ANN", "S104", "S201", "S311"]
+# INP001 - no __init__.py needed; Flask app is run directly, not imported
+# D103  - route function names are self-documenting
+"**/mock/**" = ["ANN", "S104", "S201", "S311", "INP001", "D103"]
+# INP001 - Ansible discovers filter plugins by directory scan, no __init__.py needed
+# ANN401 - Any is correct for Jinja2 filter inputs and outputs
+"filter_plugins/**" = ["INP001", "ANN401"]

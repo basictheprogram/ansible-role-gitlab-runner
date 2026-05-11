@@ -15,7 +15,10 @@ def first_or_value(value: Any, default: Any = None) -> Any:
 
 
 class FilterModule:
+    """Ansible filter plugin providing list and value utilities."""
+
     def filters(self) -> dict[str, Any]:
+        """Return the filter mapping for this plugin."""
         return {
             "first_or_value": first_or_value,
         }

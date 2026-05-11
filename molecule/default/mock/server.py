@@ -4,13 +4,15 @@ import sys
 
 from flask import Blueprint, Flask, jsonify, request
 
+logger = logging.getLogger(__name__)
+
 app = Flask(__name__)
 bp = Blueprint(__name__, "api", url_prefix="/api/v4")
 
 
 @bp.route("/runners", methods=["POST"])
 def register_runner():
-    logging.info("Got register_runner request: %r", request.data)
+    logger.info("Got register_runner request: %r", request.data)
     req = request.json
     res = {}
 
@@ -28,7 +30,7 @@ def register_runner():
 
 @bp.route("/runners/verify", methods=["POST"])
 def verify_runner():
-    logging.info("Got verify_runner request: %r", request.data)
+    logger.info("Got verify_runner request: %r", request.data)
     req = request.json
     res = {}
 

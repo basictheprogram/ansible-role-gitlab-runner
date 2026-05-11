@@ -26,8 +26,8 @@ def _normalize(cfg: dict[str, Any]) -> dict[str, Any]:
     cfg = dict(cfg)
     if "runners" in cfg and isinstance(cfg["runners"], list):
         cleaned = []
-        for r in cfg["runners"]:
-            r = dict(r)
+        for runner in cfg["runners"]:
+            r = dict(runner)
             for k in IGNORED_CONFIG_FIELDS:
                 r.pop(k, None)
             cleaned.append(r)

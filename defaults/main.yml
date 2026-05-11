@@ -75,6 +75,35 @@ gitlab_runner_session_server_session_timeout: 1800
 # Change this if you expect the keyring to be somewhere else.
 gitlab_runner_keyring_path: /etc/apt/keyrings/runner_gitlab-runner-archive-keyring.gpg
 
+# Apt codename to use for the GitLab Runner repository.
+# Useful when the host's Ubuntu/Debian release has no native GitLab Runner package yet.
+# If empty (default), the role auto-selects: uses the host's codename when it is in
+# gitlab_runner_apt_supported_codenames, otherwise falls back to
+# gitlab_runner_apt_codename_fallback.
+# Example: set to 'questing' to explicitly pin to Ubuntu 25.10 packages on any host.
+gitlab_runner_apt_repo_codename: ""
+
+# Fallback apt codename used when the host's release is not in
+# gitlab_runner_apt_supported_codenames and gitlab_runner_apt_repo_codename is unset.
+# 'questing' (Ubuntu 25.10) is the latest release with published packages at the time
+# of writing and works on Resolute Raccoon (26.04 LTS).
+gitlab_runner_apt_codename_fallback: "questing"
+
+# Ubuntu/Debian release codenames that have native GitLab Runner packages in the
+# official GitLab apt repository (packages.gitlab.com).
+# Hosts whose codename is NOT in this list will have the apt repo set up manually
+# using gitlab_runner_apt_codename_fallback instead of the auto-detect install script.
+gitlab_runner_apt_supported_codenames:
+  - focal      # Ubuntu 20.04 LTS
+  - jammy      # Ubuntu 22.04 LTS
+  - noble      # Ubuntu 24.04 LTS
+  - oracular   # Ubuntu 24.10
+  - plucky     # Ubuntu 25.04
+  - questing   # Ubuntu 25.10
+  - buster     # Debian 10
+  - bullseye   # Debian 11
+  - bookworm   # Debian 12
+
 gitlab_runner_config_update_mode: by_config_toml
 gitlab_unregister_runner_executors_which_are_not_longer_configured: false
 
@@ -141,7 +170,7 @@ gitlab_runner_remove_bash_logout: false
 # A list of runners to register and configure
 gitlab_runner_runners:
   # The identifier of the runner.
-  - name: "{{ ansible_hostname }}"
+  - name: "{{ ansible_facts['hostname'] }}"
     # set to 'absent' if you want to delete the runner. Defaults to 'present'.
     state: present
     # The executor used by the runner.
@@ -270,7 +299,7 @@ gitlab_runner_runners:
     # cache_gcs_access_id: "cache-access-account@project.iam.gserviceaccount.com"
     #
     # Cache GCS Private Key
-    # cache_gcs_private_key: "-----BEGIN PRIVATE KEY-----\nXXXXXX\n-----END PRIVATE KEY-----\n"
+    # cache_gcs_private_key: "<PEM-encoded private key content>"
     #
     # Cache azure account name
     # cache_azure_account_name: "<AZURE STORAGE ACCOUNT NAME>"

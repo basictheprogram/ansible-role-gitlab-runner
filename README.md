@@ -2,8 +2,8 @@ GitLab Runner
 =============
 
 > **This is a fork of [riemers/ansible-gitlab-runner](https://github.com/riemers/ansible-gitlab-runner),
-> maintained by [Bob Tanner](mailto:tanner@real-time.com) at Real Time Enterprises, Inc.
-> The upstream project is no longer actively maintained. This fork tracks and extends it for
+> maintained by Bob Tanner at Real Time Enterprises, Inc.
+> The upstream project is no longer seeking an active maintainer. This fork tracks and extends it for
 > continued personal and organizational use.**
 
 This role will install the [official GitLab Runner](https://gitlab.com/gitlab-org/gitlab-runner)
@@ -15,8 +15,52 @@ Requirements
 
 This role requires:
 
-* Ansible 2.13 or higher
+* Ansible 2.20 or higher
 * Installed Ansible Galaxy collections listed in file [requirements.yml](requirements.yml)
+
+Platform Notes
+--------------
+
+### Ubuntu 26.04 LTS (Resolute Raccoon)
+
+GitLab has not yet published native packages for Ubuntu 26.04 Resolute Raccoon in the
+`packages.gitlab.com` apt repository. The upstream feature request is tracked at
+[gitlab-org/gitlab-runner#39449](https://gitlab.com/gitlab-org/gitlab-runner/-/work_items/39449).
+
+**Current workaround (built into this role)**
+
+When the role detects that the host's Ubuntu/Debian release is not in
+`gitlab_runner_apt_supported_codenames`, it bypasses the packages.gitlab.com install
+script (which auto-detects the OS codename and fails on Resolute) and instead manually
+configures the apt repository using the codename defined in
+`gitlab_runner_apt_codename_fallback` (default: `questing`, Ubuntu 25.10). This allows
+the role to install the latest available GitLab Runner packages on Resolute Raccoon
+hosts without any extra configuration.
+
+No variables need to be set — the fallback is automatic.
+
+**When native 26.04 packages are released**
+
+Once GitLab publishes packages for Resolute Raccoon, add `resolute` to the
+`gitlab_runner_apt_supported_codenames` list in your inventory or `group_vars`:
+
+```yaml
+gitlab_runner_apt_supported_codenames:
+  - focal
+  - jammy
+  - noble
+  - oracular
+  - plucky
+  - questing
+  - resolute   # add this line once packages.gitlab.com supports it
+  - buster
+  - bullseye
+  - bookworm
+```
+
+On the next Ansible run the role will detect `resolute` as a supported codename,
+switch back to the standard script-based install path, and overwrite the manually
+configured sources list. No other changes are needed.
 
 Role Variables
 --------------
@@ -36,6 +80,9 @@ Role Variables
 - `gitlab_runner_listen_address` - Enables the `/metrics` endpoint for Prometheus scraping.
 - `gitlab_runner_runners` - A list of GitLab runners to register and configure. By default, this is set to a single shell executor.
 - `gitlab_runner_skip_package_repo_install` - Skips the installation of the APT or YUM repository (default: false). You should ensure that the necessary packages are available in your repository before running this role.
+- `gitlab_runner_apt_supported_codenames` - List of Ubuntu/Debian release codenames that have native GitLab Runner packages in the official apt repository. Hosts whose codename is not in this list have the repository configured manually using `gitlab_runner_apt_codename_fallback`. See the Platform Notes section above for when and how to extend this list.
+- `gitlab_runner_apt_codename_fallback` - Apt codename used when the host's release is not in `gitlab_runner_apt_supported_codenames`. Defaults to `questing` (Ubuntu 25.10).
+- `gitlab_runner_apt_repo_codename` - Explicitly pin the apt repository to a specific codename, overriding auto-detection entirely. When set, the manual repo setup path is always used regardless of the host's release. Leave empty (default) to let the role decide.
 - `gitlab_runner_keyring_path` - Path to the GitLab Runner repository GPG keyring file (default: `/etc/apt/keyrings/runner_gitlab-runner-archive-keyring.gpg`).
   - Set to `/etc/apt/keyrings/runner_gitlab-runner-archive-keyring.gpg` (default) if using APT > 1.1
   - Set to `/etc/apt/trusted.gpg.d/runner_gitlab-runner.gpg` if using legacy APT < 1.1)

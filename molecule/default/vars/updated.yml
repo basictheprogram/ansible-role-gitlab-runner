@@ -1,5 +1,6 @@
+---
 gitlab_runner_runners:
-  - name: 'Example Docker GitLab Runner'
+  - name: "Example Docker GitLab Runner"
     token: ABCD
     executor: docker
     docker_pull_policy: always
